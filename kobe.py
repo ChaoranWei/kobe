@@ -18,9 +18,10 @@ def feature_engineering(df):
         df = df.drop(i, 1)
     
     df['game_date'] = pd.to_datetime(df['game_date']) #processing date string
+
     for i in ['year', 'month','day']:
-        df[i] = getattr(df['game_date'].dt, i)
-        
+        df[i] = getattr(df['game_date'].dt,i)
+
     df = df.drop('season',1)
     df = df.drop('game_date',1)
     
