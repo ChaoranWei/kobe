@@ -147,6 +147,6 @@ preds = model.predict_proba(test)
 
 submission = pd.DataFrame()
 submission["shot_id"] = test.index 
-submission["shot_made_flag"]= preds[:,0]
+submission["shot_made_flag"]= preds[:,1]
 
 submission.to_csv("sub.csv",index=False)
