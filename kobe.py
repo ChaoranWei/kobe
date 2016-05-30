@@ -8,13 +8,13 @@ import math
 print 'Read into data...'
 print
 data = pd.read_csv('data.csv')
-#print data.head(100)
+data.set_index('shot_id', inplace=True)
 
 
 def feature_engineering(df):
   
     
-    for i in ['game_event_id','game_id', 'team_id','shot_id', 'team_name']: 
+    for i in ['game_event_id','game_id', 'team_id', 'team_name']: 
         #drop unnecessary ids, drop team name, because it's always lakers
         df = df.drop(i, 1)
     
@@ -110,12 +110,12 @@ def get_acc(df, against):
 
 train = data[-pd.isnull(data.shot_made_flag)] #training observations are those without shot_made_flag as NaN
 test = data[pd.isnull(data.shot_made_flag)]
-test.drop('shot_made_flag', 1)
+test = test.drop('shot_made_flag', 1)
 
 y = train['shot_made_flag'] #labels
 X = train.drop('shot_made_flag', 1) #features
-print train.head(10)
-print train.columns.values
+#print train.head(10)
+#print train.columns.values
 
 #kfold cross validation
 from sklearn.cross_validation import KFold, cross_val_score
@@ -125,16 +125,28 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.svm import SVC
 from sklearn.lda import LDA
 
-
+'''
 kfold = KFold(n=len(X), n_folds = 10, random_state = 2288)
 
-models = [('LR',LogisticRegression()), ('RF', RandomForestClassifier()), ('GBC', GradientBoostingClassifier(n_estimators=100, random_state=2288, max_depth = 4, learning_rate = 0.1, max_features = 10))]#,('SVM',SVC(probability=True)),('lda', LDA())]
+models = [('LR',LogisticRegression()),('lda', LDA()), ('GBCkaggl', GradientBoostingClassifier(n_estimators=100, random_state=2288, max_depth = 4, learning_rate = 0.1, max_features = 10))]
 #Naive Bayes: -12, LR: -0.61, RF: -0.96
+#, ('SVM',SVC(probability=True))
+#, ('RF', RandomForestClassifier())
 
 for name, model in models:
     print 'training ' + name + '...'
     results = cross_val_score(model, X, y, cv=kfold, scoring = 'log_loss')
     print name + ': ' + str(results.mean()) + ' +/- ' + str(results.std())
     
+#above cross validation shows that ' ' is the best estimator
+'''
+model = LogisticRegression()
 
+model.fit(X, y)
+preds = model.predict_proba(test)
 
+submission = pd.DataFrame()
+submission["shot_id"] = test.index 
+submission["shot_made_flag"]= preds[:,1]
+
+submission.to_csv("sub.csv",index=False)
