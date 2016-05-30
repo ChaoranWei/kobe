@@ -128,7 +128,7 @@ from sklearn.lda import LDA
 
 kfold = KFold(n=len(X), n_folds = 10, random_state = 2288)
 
-models = [('LR',LogisticRegression()), ('RF', RandomForestClassifier()), ('SVM',SVC(probability=True)),('lda', LDA()), ('GBC', GradientBoostingClassifier(n_estimators=100, random_state=2288, max_depth = 4, learning_rate = 0.1, max_features = 10))]
+models = [('LR',LogisticRegression()), ('RF', RandomForestClassifier()), ('GBC', GradientBoostingClassifier(n_estimators=100, random_state=2288, max_depth = 4, learning_rate = 0.1, max_features = 10))]#,('SVM',SVC(probability=True)),('lda', LDA())]
 #Naive Bayes: -12, LR: -0.61, RF: -0.96
 
 for name, model in models:
