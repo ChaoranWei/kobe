@@ -42,6 +42,15 @@ def feature_engineering(df):
     #df['distance'] = np.sqrt(value)
     #did not drop combined_shot_type
     
+    #change columns with same name
+    temp = []
+    for i in list(df.columns.values):
+        if i not in temp:
+            temp.append(i)
+        else:
+            df = df.drop(i,1)
+        
+        
     return df
 
 print 'start exploring features...'
@@ -118,6 +127,7 @@ X = train.drop('shot_made_flag', 1) #features
 #print train.columns.values
 
 #kfold cross validation
+
 from sklearn.cross_validation import KFold, cross_val_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
@@ -128,8 +138,8 @@ from sklearn.lda import LDA
 '''
 kfold = KFold(n=len(X), n_folds = 10, random_state = 2288)
 
-models = [('LR',LogisticRegression()),('lda', LDA()), ('GBCkaggl', GradientBoostingClassifier(n_estimators=100, random_state=2288, max_depth = 4, learning_rate = 0.1, max_features = 10))]
-#Naive Bayes: -12, LR: -0.61, RF: -0.96
+models = [('LR',LogisticRegression()),('lda', LDA()), ('GBC', GradientBoostingClassifier(n_estimators=100, random_state=2288, max_depth = 4, learning_rate = 0.1, max_features = 10)), ('RF', RandomForestClassifier(n_estimators = 1000, max_features=20,criterion = 'entropy', max_depth = 8, bootstrap = True, warm_start=True, random_state=245))]
+#Naive Bayes: -12, LR: -0.61, RF: -0.60+, GBC: 0.60+
 #, ('SVM',SVC(probability=True))
 #, ('RF', RandomForestClassifier())
 
@@ -137,14 +147,27 @@ for name, model in models:
     print 'training ' + name + '...'
     results = cross_val_score(model, X, y, cv=kfold, scoring = 'log_loss')
     print name + ': ' + str(results.mean()) + ' +/- ' + str(results.std())
-    
+ 
 #above cross validation shows that ' ' is the best estimator
-'''
-model = LogisticRegression()
+
+model = GradientBoostingClassifier(n_estimators=100, random_state=2288, max_depth = 4, learning_rate = 0.1, max_features = 10)
 
 model.fit(X, y)
 preds = model.predict_proba(test)
 
+submission = pd.DataFrame()
+submission["shot_id"] = test.index 
+submission["shot_made_flag"]= preds[:,1]
+
+submission.to_csv("sub.csv",index=False)
+'''
+#xgboost
+from xgboost.sklearn import XGBClassifier
+
+clf_xgb = XGBClassifier(max_depth=7, learning_rate=0.012, n_estimators=1000, subsample=0.62, colsample_bytree=0.6, seed=1)
+clf_xgb.fit(X, y)
+
+preds = clf_xgb.predict_proba(test)
 submission = pd.DataFrame()
 submission["shot_id"] = test.index 
 submission["shot_made_flag"]= preds[:,1]
